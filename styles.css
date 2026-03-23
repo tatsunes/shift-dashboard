@@ -274,7 +274,8 @@ body {
 .shift-table-wrapper {
   overflow: auto;
   max-width: 100%;
-  max-height: calc(100vh - 260px);
+  height: 1000px;
+  max-height: none;
   position: relative;
 }
 
