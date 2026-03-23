@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>シフト人員バランス管理ツール</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1>シフト人員バランス管理ツール</h1>
+      <div class="header-actions">
+        <button id="settings-btn" class="btn btn-secondary">設定</button>
+        <div id="google-signin"></div>
+        <button id="signout-btn" class="btn btn-secondary" style="display: none;">ログアウト</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- Auth Required Message -->
+      <div id="auth-required" class="auth-required">
+        <div class="auth-card">
+          <h2>Googleアカウントでログイン</h2>
+          <p>シフト表データにアクセスするには、Googleアカウントでログインしてください。</p>
+          <button id="signin-btn" class="btn btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" height="18">
+            Googleでログイン
+          </button>
+          <p class="note">※ Google Sheets APIへの読み取り権限が必要です</p>
+        </div>
+      </div>
+
+      <!-- Main Dashboard (hidden until auth) -->
+      <div id="dashboard" class="dashboard" style="display: none;">
+        <!-- Controls -->
+        <div class="controls">
+          <div class="control-group">
+            <label for="sheet-selector">シート選択:</label>
+            <select id="sheet-selector">
+              <option value="">選択してください</option>
+            </select>
+            <button id="refresh-btn" class="btn btn-primary">更新</button>
+          </div>
+
+          <div class="control-group">
+            <label>担当院フィルター:</label>
+            <div id="clinic-filter" class="clinic-filter">
+              <!-- Checkboxes will be dynamically inserted here -->
+            </div>
+            <div class="filter-actions">
+              <button id="select-all-btn" class="btn btn-small">全選択</button>
+              <button id="deselect-all-btn" class="btn btn-small">全解除</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Bar -->
+        <div id="summary-bar" class="summary-bar">
+          <span class="summary-item">データを選択してください</span>
+        </div>
+
+        <!-- Main Table -->
+        <div class="table-container">
+          <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <span>データを読み込み中...</span>
+          </div>
+          <div id="error-message" class="error-message" style="display: none;"></div>
+          <div id="shift-table-wrapper" class="shift-table-wrapper">
+            <table id="shift-table" class="shift-table">
+              <!-- Table content will be dynamically inserted -->
+            </table>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+          <span class="legend-item"><span class="legend-color status-ok"></span>適正（出勤=基本）</span>
+          <span class="legend-item"><span class="legend-color status-surplus"></span>余剰（出勤>基本）</span>
+          <span class="legend-item"><span class="legend-color status-shortage"></span>不足（出勤<基本）</span>
+          <span class="legend-item"><span class="legend-color status-no-data"></span>データなし</span>
+          <span class="legend-item"><span class="legend-color" style="background:#ff8c00"></span>人数計算対象外（受付・新人等）</span>
+          <span class="legend-item"><span class="legend-color" style="background:#1976d2"></span>ヘルプ（グロース）</span>
+          <span class="legend-hint">💡 院名クリックで出勤者展開 ／ 日付クリックで一覧表示</span>
+        </div>
+
+        <!-- Day Detail Panel（日付クリックで表示） -->
+        <div id="day-detail" class="day-detail" style="display: none;"></div>
+      </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>設定</h2>
+          <button id="close-settings" class="btn-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <section class="settings-section">
+            <h3>スプレッドシート設定</h3>
+            <div class="form-group">
+              <label for="spreadsheet-id">スプレッドシートIDまたはURL:</label>
+              <input type="text" id="spreadsheet-id" placeholder="スプレッドシートIDまたはURLを入力">
+              <p class="help-text">URLから自動的にIDを抽出します</p>
+            </div>
+            <div class="form-group">
+              <label for="api-key">Google API Key (オプション):</label>
+              <input type="text" id="api-key" placeholder="API Key（OAuth使用時は不要）">
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h3>担当院リスト</h3>
+            <div id="clinic-list" class="clinic-list">
+              <!-- Clinic items will be dynamically inserted -->
+            </div>
+            <div class="form-inline">
+              <input type="text" id="new-clinic-name" placeholder="新しい院名">
+              <input type="number" id="new-clinic-baseline" placeholder="基本人数" min="1" value="3">
+              <button id="add-clinic-btn" class="btn btn-primary">追加</button>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h3>人数計算除外リスト（施術者以外）</h3>
+            <p class="help-text">ここに登録された院・名前の組み合わせは、出勤人数のカウントから除外されます（受付・新人等）。</p>
+            <div id="reception-staff-list" class="clinic-list">
+              <!-- Reception staff items will be dynamically inserted -->
+            </div>
+            <div class="form-inline">
+              <select id="new-reception-clinic">
+                <option value="">院を選択</option>
+              </select>
+              <input type="text" id="new-reception-staff" placeholder="スタッフ名">
+              <button id="add-reception-staff-btn" class="btn btn-primary">追加</button>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h3>基本人数設定</h3>
+            <div id="baseline-settings" class="baseline-settings">
+              <!-- Baseline inputs will be dynamically inserted -->
+            </div>
+          </section>
+        </div>
+        <div class="modal-footer">
+          <button id="save-settings" class="btn btn-primary">保存</button>
+          <button id="cancel-settings" class="btn btn-secondary">キャンセル</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="env-loader.js"></script>
+  <script src="config.js"></script>
+  <script src="sheets-api.js"></script>
+  <script src="parser.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
