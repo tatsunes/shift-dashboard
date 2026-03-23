@@ -5,7 +5,8 @@
 // Google OAuth Configuration for GitHub Pages
 const GOOGLE_CONFIG = {
   CLIENT_ID: '1069776502413-qbraeog9e2g9lv2jicod0rqr1ms6adon.apps.googleusercontent.com',
-  API_KEY: 'AIzaSyCTaTNCmNSClOKC06AyJdHTKY9PNqYMs5A'
+  API_KEY: 'AIzaSyCTaTNCmNSClOKC06AyJdHTKY9PNqYMs5A',
+  DEFAULT_SPREADSHEET_ID: '1a1phHyWAKss0EG-9BrhHOHKGhD9GY7p-lydfy3R5lIA'
 };
 
 // Default clinic list with baseline numbers
@@ -217,4 +218,11 @@ function getGoogleClientId() {
  */
 function getGoogleApiKey() {
   return GOOGLE_CONFIG.API_KEY || '';
+}
+
+/**
+ * Get default spreadsheet ID from configuration
+ */
+function getDefaultSpreadsheetId() {
+  return GOOGLE_CONFIG.DEFAULT_SPREADSHEET_ID || '';
 }

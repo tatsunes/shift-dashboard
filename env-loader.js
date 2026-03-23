@@ -78,7 +78,7 @@ class EnvConfig {
    * Get default spreadsheet ID
    */
   getSpreadsheetId() {
-    return this.get('VITE_DEFAULT_SPREADSHEET_ID');
+    return this.get('VITE_DEFAULT_SPREADSHEET_ID') || (typeof getDefaultSpreadsheetId === 'function' ? getDefaultSpreadsheetId() : '');
   }
 }
 
