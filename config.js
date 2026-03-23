@@ -17,18 +17,18 @@ const GOOGLE_CONFIG = {
 // Default clinic list with baseline numbers
 const DEFAULT_CLINICS = [
   { name: '新潟', baseline: 4 },
-  { name: '三条', baseline: 4 },
-  { name: '藤見', baseline: 4 },
-  { name: '長岡', baseline: 3 },
-  { name: '万代', baseline: 4 },
-  { name: '上所', baseline: 3 },
+  { name: '三条', baseline: 5 },
+  { name: '藤見', baseline: 6 },
+  { name: '長岡', baseline: 9 },
+  { name: '万代', baseline: 3 },
+  { name: '上所', baseline: 4 },
   { name: '寺尾台', baseline: 4 },
-  { name: '新発田', baseline: 3 },
-  { name: '新津', baseline: 3 },
-  { name: '県央', baseline: 3 },
+  { name: '新発田', baseline: 6 },
+  { name: '新津', baseline: 4 },
+  { name: '県央', baseline: 5 },
   { name: '亀田', baseline: 4 },
   { name: '関屋', baseline: 4 },
-  { name: '見附', baseline: 3 }
+  { name: '見附', baseline: 4 }
 ];
 
 // Shift symbols that count as attendance
