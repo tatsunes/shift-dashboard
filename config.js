@@ -14,7 +14,7 @@ const GOOGLE_CONFIG = {
   DEFAULT_SPREADSHEET_ID: '1a1phHyWAKss0EG-9BrhHOHKGhD9GY7p-lydfy3R5lIA'
 };
 
-// Default clinic list with baseline numbers
+// Default clinic list with baseline numbers and order for GitHub Pages
 const DEFAULT_CLINICS = [
   { name: '新潟', baseline: 4 },
   { name: '三条', baseline: 5 },
@@ -29,6 +29,23 @@ const DEFAULT_CLINICS = [
   { name: '亀田', baseline: 4 },
   { name: '関屋', baseline: 4 },
   { name: '見附', baseline: 4 }
+];
+
+// Default reception staff list (excluded from count) for GitHub Pages
+const DEFAULT_RECEPTION_STAFF = [
+  { clinic: '新潟', name: '受付スタッフ1' },
+  { clinic: '三条', name: '受付スタッフ1' },
+  { clinic: '藤見', name: '受付スタッフ1' },
+  { clinic: '長岡', name: '受付スタッフ1' },
+  { clinic: '万代', name: '受付スタッフ1' },
+  { clinic: '上所', name: '受付スタッフ1' },
+  { clinic: '寺尾台', name: '受付スタッフ1' },
+  { clinic: '新発田', name: '受付スタッフ1' },
+  { clinic: '新津', name: '受付スタッフ1' },
+  { clinic: '県央', name: '受付スタッフ1' },
+  { clinic: '亀田', name: '受付スタッフ1' },
+  { clinic: '関屋', name: '受付スタッフ1' },
+  { clinic: '見附', name: '受付スタッフ1' }
 ];
 
 // Shift symbols that count as attendance
@@ -80,10 +97,13 @@ function saveClinics(clinics) {
  */
 function getStoredSpreadsheetId() {
   try {
-    return localStorage.getItem(STORAGE_KEYS.SPREADSHEET_ID) || '';
+    const stored = localStorage.getItem(STORAGE_KEYS.SPREADSHEET_ID);
+    if (stored) return stored;
   } catch (e) {
-    return '';
+    console.error('Error reading spreadsheet ID from storage:', e);
   }
+  // Return default ID for GitHub Pages initial setup
+  return GOOGLE_CONFIG.DEFAULT_SPREADSHEET_ID || '';
 }
 
 /**
@@ -150,7 +170,7 @@ function extractSpreadsheetId(input) {
 }
 
 /**
- * Get stored reception staff list or return empty
+ * Get stored reception staff list or return default
  */
 function getStoredReceptionStaff() {
   try {
@@ -161,14 +181,15 @@ function getStoredReceptionStaff() {
       if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
         console.warn('[config] 受付スタッフ旧フォーマット検出 → クリアします。設定画面で再登録してください。');
         localStorage.removeItem(STORAGE_KEYS.RECEPTION_STAFF);
-        return [];
+        return [...DEFAULT_RECEPTION_STAFF];
       }
       return parsed;
     }
   } catch (e) {
     console.error('Error reading reception staff from storage:', e);
   }
-  return [];
+  // Return default list for GitHub Pages initial setup
+  return [...DEFAULT_RECEPTION_STAFF];
 }
 
 /**
