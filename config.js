@@ -5,11 +5,13 @@
  * Configure API credentials through the Settings UI or localStorage.
  */
 
-// Google OAuth Configuration - Set via Settings UI
+// Google OAuth Configuration
+// CLIENT_ID is public by design (embedded in web pages)
+// API_KEY should be set via Settings UI (not hardcoded in public repos)
 const GOOGLE_CONFIG = {
-  CLIENT_ID: '', // Set via Settings UI → Google Client ID
-  API_KEY: '',   // Set via Settings UI → Google API Key
-  DEFAULT_SPREADSHEET_ID: '' // Set via Settings UI → Spreadsheet ID
+  CLIENT_ID: '1069776502413-qbraeog9e2g9lv2jicod0rqr1ms6adon.apps.googleusercontent.com',
+  API_KEY: '',
+  DEFAULT_SPREADSHEET_ID: '1a1phHyWAKss0EG-9BrhHOHKGhD9GY7p-lydfy3R5lIA'
 };
 
 // Default clinic list with baseline numbers
