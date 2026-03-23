@@ -64,14 +64,14 @@ class EnvConfig {
    * Get Google Client ID
    */
   getGoogleClientId() {
-    return this.get('VITE_GOOGLE_CLIENT_ID');
+    return this.get('VITE_GOOGLE_CLIENT_ID') || (typeof getGoogleClientId === 'function' ? getGoogleClientId() : '');
   }
 
   /**
    * Get Google API Key
    */
   getGoogleApiKey() {
-    return this.get('VITE_GOOGLE_API_KEY');
+    return this.get('VITE_GOOGLE_API_KEY') || (typeof getGoogleApiKey === 'function' ? getGoogleApiKey() : '');
   }
 
   /**

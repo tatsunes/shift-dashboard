@@ -2,6 +2,12 @@
  * Configuration and default settings for Shift Dashboard
  */
 
+// Google OAuth Configuration for GitHub Pages
+const GOOGLE_CONFIG = {
+  CLIENT_ID: '1069776502413-qbraeog9e2g9lv2jicod0rqr1ms6adon.apps.googleusercontent.com',
+  API_KEY: 'AIzaSyCTaTNCmNSClOKC06AyJdHTKY9PNqYMs5A'
+};
+
 // Default clinic list with baseline numbers
 const DEFAULT_CLINICS = [
   { name: '新潟', baseline: 4 },
@@ -197,4 +203,18 @@ function parseMonthFromSheetName(sheetName) {
   }
   
   return null;
+}
+
+/**
+ * Get Google Client ID from configuration
+ */
+function getGoogleClientId() {
+  return GOOGLE_CONFIG.CLIENT_ID || '';
+}
+
+/**
+ * Get Google API Key from configuration
+ */
+function getGoogleApiKey() {
+  return GOOGLE_CONFIG.API_KEY || '';
 }
