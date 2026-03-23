@@ -272,8 +272,10 @@ body {
 }
 
 .shift-table-wrapper {
-  overflow-x: auto;
+  overflow: auto;
   max-width: 100%;
+  max-height: calc(100vh - 260px);
+  position: relative;
 }
 
 /* Shift Table */
@@ -302,10 +304,16 @@ body {
 
 .shift-table th.clinic-header {
   position: sticky;
+  top: 0;
   left: 0;
   z-index: 20;
   background: #e2e6ea;
   min-width: 120px;
+}
+
+.shift-table th.week-divider,
+.shift-table td.week-divider {
+  border-left: 3px solid #9aa6b2;
 }
 
 .shift-table th.date-header {

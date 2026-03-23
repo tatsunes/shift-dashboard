@@ -362,8 +362,9 @@ function renderTable() {
   for (let i = 0; i < dates.length; i++) {
     const date = dates[i];
     const dayClass = date.isSaturday ? 'day-saturday' : date.isSunday ? 'day-sunday' : '';
+    const weekDividerClass = (date.dayOfWeek === '日' && i !== 0) ? ' week-divider' : '';
     const selectedClass = selectedDateIndex === i ? ' selected' : '';
-    tableHTML += `<th class="date-header ${dayClass}${selectedClass}" data-date-index="${i}" onclick="renderDayDetail(${i})" title="${date.day}日の出勤者を確認">${date.day}<br><small>${date.dayOfWeek}</small></th>`;
+    tableHTML += `<th class="date-header ${dayClass}${weekDividerClass}${selectedClass}" data-date-index="${i}" onclick="renderDayDetail(${i})" title="${date.day}日の出勤者を確認">${date.day}<br><small>${date.dayOfWeek}</small></th>`;
   }
   
   tableHTML += '</tr></thead>';
@@ -395,7 +396,9 @@ function renderTable() {
     // 全スタッフ表示行（固定順: 出勤はそのまま、不在は斜線で表示）
     tableHTML += `<tr class="staff-expand-row">`;
     tableHTML += `<td class="clinic-cell staff-expand-label" onclick="toggleClinicExpand('${clinic.name}')" style="cursor:pointer">${expandIcon} スタッフ</td>`;
-    for (const dayData of clinicData.daily) {
+    for (let i = 0; i < clinicData.daily.length; i++) {
+      const dayData = clinicData.daily[i];
+      const weekDividerClass = (dates[i] && dates[i].dayOfWeek === '日' && i !== 0) ? ' week-divider' : '';
       const attending = (dayData.attendingStaff || []);
       const attendingBaseNames = attending.map(n => n.includes('|') ? n.split('|')[0] : n);
       // ヘルプスタッフの注記マップ
@@ -432,7 +435,7 @@ function renderTable() {
         }
       }
       if (!cellContent) cellContent = '<div class="staff-name-item no-data">-</div>';
-      tableHTML += `<td class="staff-expand-cell">${cellContent}</td>`;
+      tableHTML += `<td class="staff-expand-cell${weekDividerClass}">${cellContent}</td>`;
     }
     tableHTML += '</tr>';
 
@@ -440,14 +443,16 @@ function renderTable() {
     tableHTML += '<tr>';
     tableHTML += `<td class="clinic-cell clinic-cell-toggle" onclick="toggleClinicExpand('${clinic.name}')" title="クリックで不在スタッフを展開/折りたたみ"><span class="expand-icon">${expandIcon}</span> ${clinic.name}<br><span class="baseline">（基本: ${clinic.baseline}名）</span></td>`;
     
-    for (const dayData of clinicData.daily) {
+    for (let i = 0; i < clinicData.daily.length; i++) {
+      const dayData = clinicData.daily[i];
+      const weekDividerClass = (dates[i] && dates[i].dayOfWeek === '日' && i !== 0) ? ' week-divider' : '';
       const statusClass = `status-${dayData.status}`;
       const staffNames = (dayData.attendingStaff || []).map(n => n.includes('|') ? n.split('|')[0] : n).join('、');
       const tooltipText = dayData.isDataMissing ? 
         'データなし' : 
         `出勤: ${dayData.count}名 / 基本: ${dayData.baseline}名${dayData.diff > 0 ? ' +' + dayData.diff : dayData.diff < 0 ? ' ' + dayData.diff : ''}${staffNames ? '\n' + staffNames : ''}`;
       
-      tableHTML += `<td class="data-cell ${statusClass}">${dayData.isDataMissing ? '-' : dayData.count}<div class="cell-tooltip">${tooltipText}</div></td>`;
+      tableHTML += `<td class="data-cell ${statusClass}${weekDividerClass}">${dayData.isDataMissing ? '-' : dayData.count}<div class="cell-tooltip">${tooltipText}</div></td>`;
       
       // Add to summary for today
       if (dayData.date === today && !dayData.isDataMissing) {
