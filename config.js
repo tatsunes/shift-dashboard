@@ -64,6 +64,9 @@ const ATTENDANCE_SYMBOLS = ['○', 'A', '出勤'];
 // Symbols that indicate help from other clinics
 const HELP_INDICATORS = ['新潟', '三条', '藤見', '長岡', '万代', '上所', '寺尾台', '新発田', '新津', '県央', '亀田', '関屋', '見附'];
 
+// Config version - increment this to force reset localStorage defaults
+const CONFIG_VERSION = '2';
+
 // Configuration storage keys
 const STORAGE_KEYS = {
   CLINICS: 'shift_dashboard_clinics',
@@ -71,8 +74,30 @@ const STORAGE_KEYS = {
   API_KEY: 'shift_dashboard_api_key',
   ACCESS_TOKEN: 'shift_dashboard_access_token',
   USER: 'shift_dashboard_user',
-  RECEPTION_STAFF: 'shift_dashboard_reception_staff'
+  RECEPTION_STAFF: 'shift_dashboard_reception_staff',
+  CONFIG_VERSION: 'shift_dashboard_config_version'
 };
+
+/**
+ * Check if config version has changed and reset defaults if needed
+ */
+function checkConfigVersion() {
+  try {
+    const storedVersion = localStorage.getItem(STORAGE_KEYS.CONFIG_VERSION);
+    if (storedVersion !== CONFIG_VERSION) {
+      console.log('[config] Config version changed:', storedVersion, '->', CONFIG_VERSION, '- resetting defaults');
+      // Reset clinic and reception staff settings to new defaults
+      localStorage.removeItem(STORAGE_KEYS.CLINICS);
+      localStorage.removeItem(STORAGE_KEYS.RECEPTION_STAFF);
+      localStorage.setItem(STORAGE_KEYS.CONFIG_VERSION, CONFIG_VERSION);
+    }
+  } catch (e) {
+    console.error('Error checking config version:', e);
+  }
+}
+
+// Run version check on load
+checkConfigVersion();
 
 /**
  * Get stored clinics or return defaults
@@ -81,7 +106,8 @@ function getStoredClinics() {
   try {
     const stored = localStorage.getItem(STORAGE_KEYS.CLINICS);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (parsed && parsed.length > 0) return parsed;
     }
   } catch (e) {
     console.error('Error reading clinics from storage:', e);
