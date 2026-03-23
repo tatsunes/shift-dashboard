@@ -16,36 +16,46 @@ const GOOGLE_CONFIG = {
 
 // Default clinic list with baseline numbers and order for GitHub Pages
 const DEFAULT_CLINICS = [
-  { name: '新潟', baseline: 4 },
-  { name: '三条', baseline: 5 },
-  { name: '藤見', baseline: 6 },
-  { name: '長岡', baseline: 9 },
-  { name: '万代', baseline: 3 },
-  { name: '上所', baseline: 4 },
-  { name: '寺尾台', baseline: 4 },
-  { name: '新発田', baseline: 6 },
-  { name: '新津', baseline: 4 },
-  { name: '県央', baseline: 5 },
-  { name: '亀田', baseline: 4 },
   { name: '関屋', baseline: 4 },
-  { name: '見附', baseline: 4 }
+  { name: '寺尾台', baseline: 4 },
+  { name: '藤見', baseline: 6 },
+  { name: '新発田', baseline: 6 },
+  { name: '上所', baseline: 4 },
+  { name: '万代', baseline: 3 },
+  { name: '亀田', baseline: 4 },
+  { name: '新潟', baseline: 4 },
+  { name: '新津', baseline: 4 },
+  { name: '見附', baseline: 4 },
+  { name: '三条', baseline: 5 },
+  { name: '県央', baseline: 5 },
+  { name: '長岡', baseline: 9 }
 ];
 
 // Default reception staff list (excluded from count) for GitHub Pages
 const DEFAULT_RECEPTION_STAFF = [
-  { clinic: '新潟', name: '受付スタッフ1' },
-  { clinic: '三条', name: '受付スタッフ1' },
-  { clinic: '藤見', name: '受付スタッフ1' },
-  { clinic: '長岡', name: '受付スタッフ1' },
-  { clinic: '万代', name: '受付スタッフ1' },
-  { clinic: '上所', name: '受付スタッフ1' },
-  { clinic: '寺尾台', name: '受付スタッフ1' },
-  { clinic: '新発田', name: '受付スタッフ1' },
-  { clinic: '新津', name: '受付スタッフ1' },
-  { clinic: '県央', name: '受付スタッフ1' },
-  { clinic: '亀田', name: '受付スタッフ1' },
-  { clinic: '関屋', name: '受付スタッフ1' },
-  { clinic: '見附', name: '受付スタッフ1' }
+  { clinic: '亀田', name: '伊藤' },
+  { clinic: '亀田', name: '伊藤' },
+  { clinic: '新発田', name: '石山' },
+  { clinic: '寺尾台', name: '金子' },
+  { clinic: '関屋', name: '冨樫' },
+  { clinic: '関屋', name: '内藤' },
+  { clinic: '関屋', name: '中野' },
+  { clinic: '藤見', name: '中川' },
+  { clinic: '藤見', name: '松永' },
+  { clinic: '藤見', name: '皆川' },
+  { clinic: '万代', name: '明間' },
+  { clinic: '上所', name: '鈴木' },
+  { clinic: '新潟', name: '渡辺' },
+  { clinic: '新潟', name: '小池' },
+  { clinic: '新津', name: '上杉' },
+  { clinic: '新津', name: '川瀬' },
+  { clinic: '見附', name: '桑原' },
+  { clinic: '見附', name: '風岡' },
+  { clinic: '県央', name: '清水' },
+  { clinic: '三条', name: '田中' },
+  { clinic: '三条', name: '高橋' },
+  { clinic: '長岡', name: '澤田' },
+  { clinic: '長岡', name: '井口' }
 ];
 
 // Shift symbols that count as attendance
