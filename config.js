@@ -65,7 +65,7 @@ const ATTENDANCE_SYMBOLS = ['○', 'A', '出勤'];
 const HELP_INDICATORS = ['新潟', '三条', '藤見', '長岡', '万代', '上所', '寺尾台', '新発田', '新津', '県央', '亀田', '関屋', '見附'];
 
 // Config version - increment this to force reset localStorage defaults
-const CONFIG_VERSION = '2';
+const CONFIG_VERSION = '3';
 
 // Configuration storage keys
 const STORAGE_KEYS = {

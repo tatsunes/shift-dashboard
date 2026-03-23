@@ -382,39 +382,51 @@ function renderTable() {
     const isExpanded = expandedClinics.has(clinic.name);
     const expandIcon = isExpanded ? '▼' : '▶';
     
-    // 展開中なら出勤者名の行を先に追加（人数行の上に表示）
-    if (isExpanded) {
-      tableHTML += `<tr class="staff-expand-row">`;
-      tableHTML += `<td class="clinic-cell staff-expand-label" onclick="toggleClinicExpand('${clinic.name}')" style="cursor:pointer">▼ 出勤者</td>`;
-      for (const dayData of clinicData.daily) {
-        const names = (dayData.attendingStaff || []);
-        // ソート: 除外対象(オレンジ)を最後に
-        const sortedNames = [...names].sort((a, b) => {
-          const aBase = a.includes('|') ? a.split('|')[0] : a;
-          const bBase = b.includes('|') ? b.split('|')[0] : b;
-          const aExcluded = isExcludedFromCount(clinic.name, aBase);
-          const bExcluded = isExcludedFromCount(clinic.name, bBase);
-          if (aExcluded && !bExcluded) return 1;
-          if (!aExcluded && bExcluded) return -1;
-          return 0;
-        });
-        const cellContent = sortedNames.length > 0 ? sortedNames.map(n => {
-          const baseName = n.includes('|') ? n.split('|')[0] : n;
-          const notes = n.includes('|') ? n.split('|')[1] : '';
-          const isHelp = n.includes('|');
-          const isExcluded = isExcludedFromCount(clinic.name, baseName);
-          const displayName = notes ? `${baseName}（${notes}）` : baseName;
-          const cls = isExcluded ? 'staff-name-item reception-staff' : isHelp ? 'staff-name-item help-staff' : 'staff-name-item';
-          return `<div class="${cls}">${displayName}</div>`;
-        }).join('') : '<div class="staff-name-item no-data">-</div>';
-        tableHTML += `<td class="staff-expand-cell">${cellContent}</td>`;
+    // 全スタッフ表示行（常に表示: 出勤スタッフ + 不在スタッフを斜線で表示）
+    tableHTML += `<tr class="staff-expand-row">`;
+    tableHTML += `<td class="clinic-cell staff-expand-label" onclick="toggleClinicExpand('${clinic.name}')" style="cursor:pointer">${expandIcon} スタッフ</td>`;
+    for (const dayData of clinicData.daily) {
+      const attending = (dayData.attendingStaff || []);
+      const absent = (dayData.absentStaff || []);
+
+      // 出勤スタッフをソート: 除外対象(オレンジ)を最後に
+      const sortedAttending = [...attending].sort((a, b) => {
+        const aBase = a.includes('|') ? a.split('|')[0] : a;
+        const bBase = b.includes('|') ? b.split('|')[0] : b;
+        const aExcluded = isExcludedFromCount(clinic.name, aBase);
+        const bExcluded = isExcludedFromCount(clinic.name, bBase);
+        if (aExcluded && !bExcluded) return 1;
+        if (!aExcluded && bExcluded) return -1;
+        return 0;
+      });
+
+      let cellContent = '';
+      // 出勤スタッフ
+      cellContent += sortedAttending.map(n => {
+        const baseName = n.includes('|') ? n.split('|')[0] : n;
+        const notes = n.includes('|') ? n.split('|')[1] : '';
+        const isHelp = n.includes('|');
+        const isExcluded = isExcludedFromCount(clinic.name, baseName);
+        const displayName = notes ? `${baseName}（${notes}）` : baseName;
+        const cls = isExcluded ? 'staff-name-item reception-staff' : isHelp ? 'staff-name-item help-staff' : 'staff-name-item';
+        return `<div class="${cls}">${displayName}</div>`;
+      }).join('');
+      // 不在スタッフ（斜線表示）
+      if (isExpanded) {
+        cellContent += absent.map(name => {
+          const isExcluded = isExcludedFromCount(clinic.name, name);
+          const cls = isExcluded ? 'staff-name-item staff-absent reception-staff' : 'staff-name-item staff-absent';
+          return `<div class="${cls}">${name}</div>`;
+        }).join('');
       }
-      tableHTML += '</tr>';
+      if (!cellContent) cellContent = '<div class="staff-name-item no-data">-</div>';
+      tableHTML += `<td class="staff-expand-cell">${cellContent}</td>`;
     }
+    tableHTML += '</tr>';
 
     // 人数行
     tableHTML += '<tr>';
-    tableHTML += `<td class="clinic-cell clinic-cell-toggle" onclick="toggleClinicExpand('${clinic.name}')" title="クリックで出勤者名を展開/折りたたみ"><span class="expand-icon">${expandIcon}</span> ${clinic.name}<br><span class="baseline">（基本: ${clinic.baseline}名）</span></td>`;
+    tableHTML += `<td class="clinic-cell clinic-cell-toggle" onclick="toggleClinicExpand('${clinic.name}')" title="クリックで不在スタッフを展開/折りたたみ"><span class="expand-icon">${expandIcon}</span> ${clinic.name}<br><span class="baseline">（基本: ${clinic.baseline}名）</span></td>`;
     
     for (const dayData of clinicData.daily) {
       const statusClass = `status-${dayData.status}`;
@@ -513,6 +525,7 @@ function renderDayDetail(dateIndex) {
     if (!dayData) continue;
 
     const staffList = dayData.attendingStaff || [];
+    const absentList = dayData.absentStaff || [];
     // ソート: 除外対象(オレンジ)を最後に
     const sortedStaffList = [...staffList].sort((a, b) => {
       const aBase = a.includes('|') ? a.split('|')[0] : a.replace('(H)', '');
@@ -527,26 +540,31 @@ function renderDayDetail(dateIndex) {
       ? 'データなし'
       : `${dayData.count}名 / 基本${clinic.baseline}名`;
 
+    // 出勤スタッフHTML
+    let staffHTML = sortedStaffList.map(n => {
+      const baseName = n.includes('|') ? n.split('|')[0] : n.replace('(H)', '');
+      const notes = n.includes('|') ? n.split('|')[1] : '';
+      const isHelp = n.includes('|');
+      const isExcluded = isExcludedFromCount(clinic.name, baseName);
+      const displayName = notes ? `${baseName}（${notes}）` : baseName;
+      const cls = isExcluded ? 'clinic-day-staff-name reception-staff' : isHelp ? 'clinic-day-staff-name help-staff' : 'clinic-day-staff-name';
+      return `<div class="${cls}">● ${displayName}</div>`;
+    }).join('');
+    // 不在スタッフHTML
+    staffHTML += absentList.map(name => {
+      const isExcluded = isExcludedFromCount(clinic.name, name);
+      const cls = isExcluded ? 'clinic-day-staff-name staff-absent reception-staff' : 'clinic-day-staff-name staff-absent';
+      return `<div class="${cls}">― ${name}</div>`;
+    }).join('');
+    if (!staffHTML) staffHTML = '<div class="clinic-day-staff-name no-data">（個別データなし）</div>';
+
     html += `
       <div class="clinic-day-card">
         <div class="clinic-day-header status-${dayData.status}">
           <span class="clinic-day-name">${clinic.name}</span>
           <span class="clinic-day-count">${countLabel}</span>
         </div>
-        <div class="clinic-day-staff">
-          ${sortedStaffList.length > 0
-            ? sortedStaffList.map(n => {
-                const baseName = n.includes('|') ? n.split('|')[0] : n.replace('(H)', '');
-                const notes = n.includes('|') ? n.split('|')[1] : '';
-                const isHelp = n.includes('|');
-                const isExcluded = isExcludedFromCount(clinic.name, baseName);
-                const displayName = notes ? `${baseName}（${notes}）` : baseName;
-                const cls = isExcluded ? 'clinic-day-staff-name reception-staff' : isHelp ? 'clinic-day-staff-name help-staff' : 'clinic-day-staff-name';
-                return `<div class="${cls}">● ${displayName}</div>`;
-              }).join('')
-            : '<div class="clinic-day-staff-name no-data">（個別データなし）</div>'
-          }
-        </div>
+        <div class="clinic-day-staff">${staffHTML}</div>
       </div>
     `;
   }

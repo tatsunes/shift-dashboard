@@ -256,6 +256,21 @@ class ShiftParser {
         }
       }
 
+      // 全スタッフ名を事前収集（日付に依存しない）
+      const allStaffNames = [];
+      for (let rowIdx = group.startRow; rowIdx <= group.endRow; rowIdx++) {
+        if (rowIdx >= values.length) break;
+        if (rowIdx === growthRowIdx) continue;
+        const row = values[rowIdx];
+        if (!row) continue;
+        const colA = String(row[0] || '').trim();
+        if (colA !== '' && this.nameCol > 0) continue;
+        const staffName = String(row[this.nameCol] || '').trim();
+        if (!staffName) continue;
+        if (staffName.includes('出勤人数') || staffName.includes('合計')) continue;
+        allStaffNames.push(staffName);
+      }
+
       for (const date of dates) {
         const colIdx = date.columnIndex;
         let attendingStaff = [];
@@ -316,11 +331,25 @@ class ShiftParser {
           const baseName = n.includes('|') ? n.split('|')[0] : n.replace('(H)', '');
           return !this.isReceptionStaffForClinic(clinicName, baseName);
         }).length;
-        const isDataMissing = count === 0;
-        const status = isDataMissing ? 'no-data' :
-                       count === clinic.baseline ? 'ok' :
-                       count > clinic.baseline ? 'surplus' : 'shortage';
+        const isDataMissing = count === 0 && attendingStaff.length === 0;
+        // 4段階ステータス: shortage / ok / surplus-minor(余力あり) / surplus(余剰)
+        let status;
+        if (isDataMissing) {
+          status = 'no-data';
+        } else if (count < clinic.baseline) {
+          status = 'shortage';
+        } else if (count === clinic.baseline) {
+          status = 'ok';
+        } else if (count === clinic.baseline + 1) {
+          status = 'surplus-minor';
+        } else {
+          status = 'surplus';
+        }
         const diff = isDataMissing ? null : count - clinic.baseline;
+
+        // 不在スタッフ = 全スタッフ - 出勤スタッフ
+        const attendingBaseNames = attendingStaff.map(n => n.includes('|') ? n.split('|')[0] : n);
+        const absentStaff = allStaffNames.filter(name => !attendingBaseNames.includes(name));
 
         attendance[clinicName].daily.push({
           date: date.day,
@@ -331,6 +360,8 @@ class ShiftParser {
           status,
           helpFrom: [],
           attendingStaff,
+          absentStaff,
+          allStaffNames,
           isDataMissing
         });
       }

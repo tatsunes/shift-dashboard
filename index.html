@@ -78,13 +78,15 @@
 
         <!-- Legend -->
         <div class="legend">
-          <span class="legend-item"><span class="legend-color status-ok"></span>適正（出勤=基本）</span>
-          <span class="legend-item"><span class="legend-color status-surplus"></span>余剰（出勤>基本）</span>
-          <span class="legend-item"><span class="legend-color status-shortage"></span>不足（出勤<基本）</span>
+          <span class="legend-item"><span class="legend-color status-shortage"></span>不足</span>
+          <span class="legend-item"><span class="legend-color status-ok"></span>基本</span>
+          <span class="legend-item"><span class="legend-color status-surplus-minor"></span>余力あり（+1）</span>
+          <span class="legend-item"><span class="legend-color status-surplus"></span>余剰（+2以上）</span>
           <span class="legend-item"><span class="legend-color status-no-data"></span>データなし</span>
-          <span class="legend-item"><span class="legend-color" style="background:#ff8c00"></span>人数計算対象外（受付・新人等）</span>
-          <span class="legend-item"><span class="legend-color" style="background:#1976d2"></span>ヘルプ（グロース）</span>
-          <span class="legend-hint">💡 院名クリックで出勤者展開 ／ 日付クリックで一覧表示</span>
+          <span class="legend-item"><span class="legend-color" style="background:#ff8c00"></span>対象外（受付等）</span>
+          <span class="legend-item"><span class="legend-color" style="background:#1976d2"></span>ヘルプ</span>
+          <span class="legend-item"><span style="text-decoration:line-through;color:#bbb;font-size:0.8rem">名前</span> 不在</span>
+          <span class="legend-hint">💡 院名クリックで不在者展開 ／ 日付クリックで一覧表示</span>
         </div>
 
         <!-- Day Detail Panel（日付クリックで表示） -->
