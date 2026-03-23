@@ -382,42 +382,54 @@ function renderTable() {
     const isExpanded = expandedClinics.has(clinic.name);
     const expandIcon = isExpanded ? '▼' : '▶';
     
-    // 全スタッフ表示行（常に表示: 出勤スタッフ + 不在スタッフを斜線で表示）
+    // 全スタッフの固定順序を取得（除外対象を末尾に並べる）
+    const firstDay = clinicData.daily[0];
+    const fixedStaffOrder = [...(firstDay ? firstDay.allStaffNames || [] : [])].sort((a, b) => {
+      const aExcluded = isExcludedFromCount(clinic.name, a);
+      const bExcluded = isExcludedFromCount(clinic.name, b);
+      if (aExcluded && !bExcluded) return 1;
+      if (!aExcluded && bExcluded) return -1;
+      return 0;
+    });
+
+    // 全スタッフ表示行（固定順: 出勤はそのまま、不在は斜線で表示）
     tableHTML += `<tr class="staff-expand-row">`;
     tableHTML += `<td class="clinic-cell staff-expand-label" onclick="toggleClinicExpand('${clinic.name}')" style="cursor:pointer">${expandIcon} スタッフ</td>`;
     for (const dayData of clinicData.daily) {
       const attending = (dayData.attendingStaff || []);
-      const absent = (dayData.absentStaff || []);
-
-      // 出勤スタッフをソート: 除外対象(オレンジ)を最後に
-      const sortedAttending = [...attending].sort((a, b) => {
-        const aBase = a.includes('|') ? a.split('|')[0] : a;
-        const bBase = b.includes('|') ? b.split('|')[0] : b;
-        const aExcluded = isExcludedFromCount(clinic.name, aBase);
-        const bExcluded = isExcludedFromCount(clinic.name, bBase);
-        if (aExcluded && !bExcluded) return 1;
-        if (!aExcluded && bExcluded) return -1;
-        return 0;
+      const attendingBaseNames = attending.map(n => n.includes('|') ? n.split('|')[0] : n);
+      // ヘルプスタッフの注記マップ
+      const helpNotesMap = {};
+      attending.forEach(n => {
+        if (n.includes('|')) {
+          helpNotesMap[n.split('|')[0]] = n.split('|')[1];
+        }
       });
 
       let cellContent = '';
-      // 出勤スタッフ
-      cellContent += sortedAttending.map(n => {
-        const baseName = n.includes('|') ? n.split('|')[0] : n;
-        const notes = n.includes('|') ? n.split('|')[1] : '';
-        const isHelp = n.includes('|');
-        const isExcluded = isExcludedFromCount(clinic.name, baseName);
-        const displayName = notes ? `${baseName}（${notes}）` : baseName;
-        const cls = isExcluded ? 'staff-name-item reception-staff' : isHelp ? 'staff-name-item help-staff' : 'staff-name-item';
-        return `<div class="${cls}">${displayName}</div>`;
-      }).join('');
-      // 不在スタッフ（斜線表示）
-      if (isExpanded) {
-        cellContent += absent.map(name => {
-          const isExcluded = isExcludedFromCount(clinic.name, name);
+      // 固定順でスタッフを表示
+      for (const name of fixedStaffOrder) {
+        const isAttending = attendingBaseNames.includes(name);
+        const isExcluded = isExcludedFromCount(clinic.name, name);
+        const notes = helpNotesMap[name] || '';
+
+        if (isAttending) {
+          const displayName = notes ? `${name}（${notes}）` : name;
+          const cls = isExcluded ? 'staff-name-item reception-staff' : 'staff-name-item';
+          cellContent += `<div class="${cls}">${displayName}</div>`;
+        } else if (isExpanded) {
           const cls = isExcluded ? 'staff-name-item staff-absent reception-staff' : 'staff-name-item staff-absent';
-          return `<div class="${cls}">${name}</div>`;
-        }).join('');
+          cellContent += `<div class="${cls}">${name}</div>`;
+        }
+      }
+      // ヘルプスタッフ（固定リストにない外部からの応援）
+      for (const n of attending) {
+        const baseName = n.includes('|') ? n.split('|')[0] : n;
+        if (!fixedStaffOrder.includes(baseName)) {
+          const notesVal = n.includes('|') ? n.split('|')[1] : '';
+          const displayName = notesVal ? `${baseName}（${notesVal}）` : baseName;
+          cellContent += `<div class="staff-name-item help-staff">${displayName}</div>`;
+        }
       }
       if (!cellContent) cellContent = '<div class="staff-name-item no-data">-</div>';
       tableHTML += `<td class="staff-expand-cell">${cellContent}</td>`;
