@@ -356,6 +356,9 @@ function renderTable() {
   }
   
   // テーブルヘッダー構築
+  const today = new Date().getDate();
+  const tomorrow = today + 1;
+
   let tableHTML = '<thead><tr>';
   tableHTML += '<th class="clinic-header">院名<br><small>（基本人数）</small></th>';
 
@@ -364,7 +367,8 @@ function renderTable() {
     const dayClass = date.isSaturday ? 'day-saturday' : date.isSunday ? 'day-sunday' : '';
     const weekDividerClass = (date.dayOfWeek === '日' && i !== 0) ? ' week-divider' : '';
     const selectedClass = selectedDateIndex === i ? ' selected' : '';
-    tableHTML += `<th class="date-header ${dayClass}${weekDividerClass}${selectedClass}" data-date-index="${i}" onclick="renderDayDetail(${i})" title="${date.day}日の出勤者を確認">${date.day}<br><small>${date.dayOfWeek}</small></th>`;
+    const todayClass = date.day === today ? ' col-today' : '';
+    tableHTML += `<th class="date-header ${dayClass}${weekDividerClass}${selectedClass}${todayClass}" data-date-index="${i}" onclick="renderDayDetail(${i})" title="${date.day}日の出勤者を確認">${date.day}<br><small>${date.dayOfWeek}</small></th>`;
   }
   
   tableHTML += '</tr></thead>';
@@ -373,8 +377,6 @@ function renderTable() {
   tableHTML += '<tbody>';
   
   // Calculate today's and tomorrow's summary
-  const today = new Date().getDate();
-  const tomorrow = today + 1;
   let summaryToday = { shortage: [], surplus: [] };
   let summaryTomorrow = { shortage: [], surplus: [] };
   
@@ -398,7 +400,8 @@ function renderTable() {
         'データなし' : 
         `出勤: ${dayData.count}名 / 基本: ${dayData.baseline}名${dayData.diff > 0 ? ' +' + dayData.diff : dayData.diff < 0 ? ' ' + dayData.diff : ''}${staffNames ? '\n' + staffNames : ''}`;
       
-      tableHTML += `<td class="data-cell ${statusClass}${weekDividerClass}" onclick="showStaffModal('${clinic.name}', ${i})">${dayData.isDataMissing ? '-' : dayData.count}<div class="cell-tooltip">${tooltipText}</div></td>`;
+      const todayClass = (dayData.date === today) ? ' col-today' : '';
+      tableHTML += `<td class="data-cell ${statusClass}${weekDividerClass}${todayClass}" onclick="showStaffModal('${clinic.name}', ${i})">${dayData.isDataMissing ? '-' : dayData.count}<div class="cell-tooltip">${tooltipText}</div></td>`;
       
       // Add to summary for today
       if (dayData.date === today && !dayData.isDataMissing) {

@@ -345,7 +345,8 @@ details.accordion-filter[open] summary.accordion-summary {
 /* Shift Table */
 .shift-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.8125rem;
   min-width: 800px;
 }
@@ -353,23 +354,21 @@ details.accordion-filter[open] summary.accordion-summary {
 .shift-table th,
 .shift-table td {
   border: 1px solid var(--cell-border);
+  border-top: none;
+  border-left: none;
   padding: 6px 2px;
   text-align: center;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-.shift-table tbody tr:hover td.data-cell {
-  background-color: rgba(0,0,0,0.03);
-}
-
 .shift-table th {
-  background: #f8f9fa;
+  background: #f0f2f5;
   font-weight: 600;
   position: sticky;
   top: 0;
   z-index: 10;
-  box-shadow: 0 1px 0 var(--cell-border);
+  border-top: 1px solid var(--cell-border);
 }
 
 .shift-table th.clinic-header {
@@ -377,12 +376,12 @@ details.accordion-filter[open] summary.accordion-summary {
   top: 0;
   left: 0;
   z-index: 20;
-  background: #f8f9fa;
+  background: #f0f2f5;
   width: 60px;
   max-width: 80px;
-  box-shadow: 1px 1px 0 var(--cell-border);
   font-size: 0.75rem;
   padding: 4px;
+  border-left: 1px solid var(--cell-border);
 }
 
 .shift-table th.week-divider,
@@ -401,16 +400,16 @@ details.accordion-filter[open] summary.accordion-summary {
 .shift-table td.clinic-cell {
   position: sticky;
   left: 0;
-  z-index: 15;
+  z-index: 5;
   background: var(--color-white);
   font-weight: 600;
   text-align: left;
   padding-left: 8px;
   font-size: 0.8rem;
-  box-shadow: 1px 0 0 var(--cell-border);
   white-space: nowrap;
   overflow: visible;
-  border-bottom: 2px solid #d1d5db; /* Separator for clinic groups */
+  border-bottom: 2px solid #d1d5db;
+  border-left: 1px solid var(--cell-border);
 }
 
 /* Tooltip for baseline on hover instead of inline */
@@ -484,6 +483,15 @@ details.accordion-filter[open] summary.accordion-summary {
 }
 .col-sunday {
   background-color: rgba(198, 40, 40, 0.05) !important;
+}
+
+/* Today column highlight */
+.col-today {
+  outline: 2px solid #4a90d9;
+  outline-offset: -2px;
+}
+.shift-table th.col-today {
+  background: #dbe8f5 !important;
 }
 
 /* Tooltip */
