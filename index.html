@@ -43,7 +43,7 @@
       <div id="dashboard" class="dashboard" style="display: none;">
         <!-- Controls -->
         <div class="controls">
-          <div class="control-group">
+          <div class="control-group inline-controls">
             <label for="sheet-selector">シート選択:</label>
             <select id="sheet-selector">
               <option value="">選択してください</option>
@@ -52,20 +52,36 @@
           </div>
 
           <div class="control-group">
-            <label>担当院フィルター:</label>
-            <div id="clinic-filter" class="clinic-filter">
-              <!-- Checkboxes will be dynamically inserted here -->
-            </div>
-            <div class="filter-actions">
-              <button id="select-all-btn" class="btn btn-small">全選択</button>
-              <button id="deselect-all-btn" class="btn btn-small">全解除</button>
-            </div>
+            <details class="accordion-filter">
+              <summary class="accordion-summary">フィルター ▼</summary>
+              <div class="accordion-content">
+                <div id="clinic-filter" class="clinic-filter">
+                  <!-- Checkboxes will be dynamically inserted here -->
+                </div>
+                <div class="filter-actions">
+                  <button id="select-all-btn" class="btn btn-small">全選択</button>
+                  <button id="deselect-all-btn" class="btn btn-small">全解除</button>
+                </div>
+              </div>
+            </details>
           </div>
         </div>
 
         <!-- Summary Bar -->
         <div id="summary-bar" class="summary-bar">
           <span class="summary-item">データを選択してください</span>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend compact-legend">
+          <span class="legend-item"><span class="legend-color status-shortage"></span>不足</span>
+          <span class="legend-item"><span class="legend-color status-ok"></span>基本</span>
+          <span class="legend-item"><span class="legend-color status-surplus-minor"></span>余力あり（+1）</span>
+          <span class="legend-item"><span class="legend-color status-surplus"></span>余剰（+2以上）</span>
+          <span class="legend-item"><span class="legend-color status-no-data"></span>データなし</span>
+          <span class="legend-item"><span class="legend-color" style="background:#ff8c00"></span>対象外（受付等）</span>
+          <span class="legend-item"><span class="legend-color" style="background:#1976d2"></span>ヘルプ</span>
+          <span class="legend-hint">💡 院名クリックで不在者表示切替 ／ 日付クリックで一覧表示 ／ セル領域クリックでスタッフ詳細</span>
         </div>
 
         <!-- Main Table -->
@@ -82,21 +98,22 @@
           </div>
         </div>
 
-        <!-- Legend -->
-        <div class="legend">
-          <span class="legend-item"><span class="legend-color status-shortage"></span>不足</span>
-          <span class="legend-item"><span class="legend-color status-ok"></span>基本</span>
-          <span class="legend-item"><span class="legend-color status-surplus-minor"></span>余力あり（+1）</span>
-          <span class="legend-item"><span class="legend-color status-surplus"></span>余剰（+2以上）</span>
-          <span class="legend-item"><span class="legend-color status-no-data"></span>データなし</span>
-          <span class="legend-item"><span class="legend-color" style="background:#ff8c00"></span>対象外（受付等）</span>
-          <span class="legend-item"><span class="legend-color" style="background:#1976d2"></span>ヘルプ</span>
-          <span class="legend-item"><span style="text-decoration:line-through;color:#bbb;font-size:0.8rem">名前</span> 不在</span>
-          <span class="legend-hint">💡 院名クリックで不在者展開 ／ 日付クリックで一覧表示</span>
-        </div>
-
         <!-- Day Detail Panel（日付クリックで表示） -->
         <div id="day-detail" class="day-detail" style="display: none;"></div>
+        
+        <!-- Staff Modal (セルクリックで表示・ボトムシート) -->
+        <div id="staff-modal" class="staff-modal" style="display: none;">
+          <div class="staff-modal-overlay" onclick="closeStaffModal()"></div>
+          <div class="staff-modal-content">
+            <div class="staff-modal-header">
+              <h3 id="staff-modal-title">出勤スタッフ</h3>
+              <button class="btn-close" onclick="closeStaffModal()">&times;</button>
+            </div>
+            <div id="staff-modal-body" class="staff-modal-body">
+              <!-- Staff list inserted here -->
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 

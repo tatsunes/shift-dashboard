@@ -12,15 +12,16 @@
   --color-gray: #e9ecef;
   --color-gray-dark: #adb5bd;
   
-  --status-ok: #a8d8a8;
-  --status-surplus-minor: #b3d4fc;
-  --status-surplus: #89b4e8;
-  --status-shortage: #f4a9a8;
-  --status-no-data: #e0e0e0;
+  --status-ok: #cae8ca; /* Lighter green */
+  --status-surplus-minor: #cbe0f9; /* Lighter blue */
+  --status-surplus: #a4c5ee; /* Slightly lighter blue */
+  --status-shortage: #f8c0c0; /* Lighter pink/red */
+  --status-no-data: #eaeaea; /* Lighter gray */
   
   --header-height: 60px;
   --border-radius: 4px;
   --shadow: 0 2px 4px rgba(0,0,0,0.1);
+  --cell-border: #e5e7eb;
 }
 
 * {
@@ -180,6 +181,17 @@ body {
   margin-bottom: 16px;
 }
 
+.inline-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inline-controls label {
+  margin-bottom: 0 !important;
+}
+
 .control-group:last-child {
   margin-bottom: 0;
 }
@@ -197,6 +209,31 @@ body {
   border-radius: var(--border-radius);
   margin-right: 8px;
   min-width: 150px;
+}
+
+/* Accordion Filter */
+details.accordion-filter {
+  background: var(--color-light);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-gray-dark);
+}
+
+summary.accordion-summary {
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none; /* Hide default triangle */
+  user-select: none;
+}
+summary.accordion-summary::-webkit-details-marker {
+  display: none;
+}
+details.accordion-filter[open] summary.accordion-summary {
+  border-bottom: 1px solid var(--color-gray-dark);
+}
+
+.accordion-content {
+  padding: 12px 16px;
 }
 
 /* Clinic Filter */
@@ -253,14 +290,20 @@ body {
   font-weight: 600;
 }
 
-.summary-shortage {
-  color: #c0392b;
+.summary-shortage, .summary-surplus {
   font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: var(--color-white);
+}
+
+.summary-shortage {
+  background: #dc3545;
 }
 
 .summary-surplus {
-  color: #2980b9;
-  font-weight: 600;
+  background: #007bff;
 }
 
 /* Table Container */
@@ -289,18 +332,24 @@ body {
 
 .shift-table th,
 .shift-table td {
-  border: 1px solid #dee2e6;
-  padding: 8px 4px;
+  border: 1px solid var(--cell-border);
+  padding: 6px 2px;
   text-align: center;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.shift-table tbody tr:hover td.data-cell {
+  background-color: rgba(0,0,0,0.03);
 }
 
 .shift-table th {
-  background: var(--color-gray);
+  background: #f8f9fa;
   font-weight: 600;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: 0 1px 0 var(--cell-border);
 }
 
 .shift-table th.clinic-header {
@@ -308,17 +357,25 @@ body {
   top: 0;
   left: 0;
   z-index: 20;
-  background: #e2e6ea;
-  min-width: 120px;
+  background: #f8f9fa;
+  width: 60px;
+  max-width: 80px;
+  box-shadow: 1px 1px 0 var(--cell-border);
+  font-size: 0.75rem;
+  padding: 4px;
 }
 
 .shift-table th.week-divider,
 .shift-table td.week-divider {
-  border-left: 3px solid #9aa6b2;
+  border-left: 2px solid #ccc; /* Separator for weeks */
 }
 
 .shift-table th.date-header {
-  min-width: 36px;
+  min-width: 32px;
+  width: 36px;
+  font-size: 0.75rem;
+  padding: 4px 2px;
+  line-height: 1.2;
 }
 
 .shift-table td.clinic-cell {
@@ -328,18 +385,40 @@ body {
   background: var(--color-white);
   font-weight: 600;
   text-align: left;
-  padding-left: 12px;
+  padding-left: 8px;
+  font-size: 0.8rem;
+  box-shadow: 1px 0 0 var(--cell-border);
+  white-space: nowrap;
+  overflow: visible;
+  border-bottom: 2px solid #d1d5db; /* Separator for clinic groups */
 }
 
+/* Tooltip for baseline on hover instead of inline */
 .shift-table td.clinic-cell .baseline {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--color-dark);
+  color: var(--color-white);
+  padding: 4px 8px;
+  border-radius: var(--border-radius);
   font-size: 0.75rem;
-  color: var(--color-secondary);
-  font-weight: normal;
+  z-index: 100;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.shift-table td.clinic-cell:hover .baseline {
+  display: block;
 }
 
 .shift-table td.data-cell {
   cursor: pointer;
   position: relative;
+  font-size: 0.85rem;
+  border-bottom: 2px solid #d1d5db; /* Match clinic row bottom border */
 }
 
 .shift-table td.data-cell:hover {
@@ -374,13 +453,17 @@ body {
 
 /* Day Headers */
 .day-saturday {
-  background-color: #e3f2fd !important;
   color: #1976d2;
+}
+.col-saturday {
+  background-color: rgba(25, 118, 210, 0.05) !important;
 }
 
 .day-sunday {
-  background-color: #ffebee !important;
   color: #c62828;
+}
+.col-sunday {
+  background-color: rgba(198, 40, 40, 0.05) !important;
 }
 
 /* Tooltip */
@@ -422,11 +505,16 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  margin-top: 16px;
   padding: 12px 20px;
   background: var(--color-white);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
+}
+
+.legend.compact-legend {
+  margin-top: 0;
+  margin-bottom: 12px;
+  padding: 8px 16px;
 }
 
 .legend-item {
@@ -823,9 +911,14 @@ body {
 .expand-icon {
   font-size: 0.625rem;
   color: var(--color-secondary);
-  margin-right: 2px;
+  margin-right: 4px;
   display: inline-block;
   width: 12px;
+  transition: transform 0.2s ease;
+}
+
+.clinic-cell-toggle.expanded .expand-icon {
+  transform: rotate(90deg);
 }
 
 .staff-expand-row {
@@ -889,6 +982,75 @@ body {
   opacity: 0.7;
 }
 
+/* Staff Modal (Bottom Sheet on Mobile) */
+.staff-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end; /* Bottom sheet by default (mobile) */
+  justify-content: center;
+}
+
+.staff-modal-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  animation: fadeIn 0.3s forwards;
+}
+
+.staff-modal-content {
+  background: var(--color-white);
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  z-index: 2001;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s forwards;
+}
+
+.staff-modal-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-gray);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.staff-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--color-dark);
+}
+
+.staff-modal-body {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.staff-list-item {
+  padding: 8px;
+  border-bottom: 1px solid var(--color-gray);
+  font-size: 0.95rem;
+}
+
+.staff-list-item:last-child {
+  border-bottom: none;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header h1 {
@@ -905,15 +1067,39 @@ body {
   }
   
   .shift-table {
-    font-size: 0.75rem;
+    font-size: 10px;
   }
   
   .shift-table th,
   .shift-table td {
     padding: 4px 2px;
   }
+
+  .shift-table th.clinic-header,
+  .shift-table td.clinic-cell {
+    width: 50px;
+    font-size: 11px;
+    padding-left: 4px;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .shift-table td.clinic-cell .expand-icon {
+    display: block;
+    margin: 0 auto 2px auto;
+  }
   
   .legend {
     font-size: 0.75rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .staff-modal {
+    align-items: center; /* Center on PC */
+  }
+  .staff-modal-content {
+    border-radius: 8px;
+    animation: fadeIn 0.2s forwards; /* No slide-up on PC */
   }
 }
