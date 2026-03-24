@@ -306,6 +306,26 @@ details.accordion-filter[open] summary.accordion-summary {
   background: #007bff;
 }
 
+.summary-ok {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.summary-day-block {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.summary-day-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-dark);
+  white-space: nowrap;
+}
+
 /* Table Container */
 .table-container {
   background: var(--color-white);

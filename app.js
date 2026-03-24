@@ -372,9 +372,11 @@ function renderTable() {
   // Build table body
   tableHTML += '<tbody>';
   
-  // Calculate today's summary (use first day if no current date)
+  // Calculate today's and tomorrow's summary
   const today = new Date().getDate();
-  let summary = { shortage: [], surplus: [] };
+  const tomorrow = today + 1;
+  let summaryToday = { shortage: [], surplus: [] };
+  let summaryTomorrow = { shortage: [], surplus: [] };
   
   for (const clinic of filteredClinics) {
     const clinicData = attendance[clinic.name];
@@ -383,9 +385,9 @@ function renderTable() {
     const isExpanded = expandedClinics.has(clinic.name);
     const expandClass = isExpanded ? ' expanded' : '';
 
-    // 人数行（以前はスタッフ詳細行と2行でしたが、1行に統合しました）
+    // 人数行
     tableHTML += '<tr>';
-    tableHTML += `<td class="clinic-cell clinic-cell-toggle${expandClass}" onclick="toggleClinicExpand('${clinic.name}')" title="クリックでポップオーバー内の不在者表示切替"><span class="expand-icon">▶</span> ${clinic.name}<span class="baseline">（基本: ${clinic.baseline}名）</span></td>`;
+    tableHTML += `<td class="clinic-cell clinic-cell-toggle${expandClass}" onclick="toggleClinicExpand('${clinic.name}')" title="クリックでスタッフ一覧を展開/折りたたみ"><span class="expand-icon">▶</span> ${clinic.name}<span class="baseline">（基本: ${clinic.baseline}名）</span></td>`;
     
     for (let i = 0; i < clinicData.daily.length; i++) {
       const dayData = clinicData.daily[i];
@@ -401,14 +403,76 @@ function renderTable() {
       // Add to summary for today
       if (dayData.date === today && !dayData.isDataMissing) {
         if (dayData.diff < 0) {
-          summary.shortage.push({ name: clinic.name, diff: dayData.diff });
+          summaryToday.shortage.push({ name: clinic.name, diff: dayData.diff });
         } else if (dayData.diff > 0) {
-          summary.surplus.push({ name: clinic.name, diff: dayData.diff });
+          summaryToday.surplus.push({ name: clinic.name, diff: dayData.diff });
+        }
+      }
+      // Add to summary for tomorrow
+      if (dayData.date === tomorrow && !dayData.isDataMissing) {
+        if (dayData.diff < 0) {
+          summaryTomorrow.shortage.push({ name: clinic.name, diff: dayData.diff });
+        } else if (dayData.diff > 0) {
+          summaryTomorrow.surplus.push({ name: clinic.name, diff: dayData.diff });
         }
       }
     }
     
     tableHTML += '</tr>';
+
+    // スタッフ展開行（院名クリックで展開時のみ表示）
+    if (isExpanded) {
+      const firstDay = clinicData.daily[0];
+      const fixedStaffOrder = [...(firstDay ? firstDay.allStaffNames || [] : [])].sort((a, b) => {
+        const aExcluded = isExcludedFromCount(clinic.name, a);
+        const bExcluded = isExcludedFromCount(clinic.name, b);
+        if (aExcluded && !bExcluded) return 1;
+        if (!aExcluded && bExcluded) return -1;
+        return 0;
+      });
+
+      tableHTML += `<tr class="staff-expand-row">`;
+      tableHTML += `<td class="clinic-cell staff-expand-label" onclick="toggleClinicExpand('${clinic.name}')" style="cursor:pointer">▼ スタッフ</td>`;
+      for (let i = 0; i < clinicData.daily.length; i++) {
+        const dayData = clinicData.daily[i];
+        const weekDividerClass = (dates[i] && dates[i].dayOfWeek === '日' && i !== 0) ? ' week-divider' : '';
+        const attending = (dayData.attendingStaff || []);
+        const attendingBaseNames = attending.map(n => n.includes('|') ? n.split('|')[0] : n);
+        const helpNotesMap = {};
+        attending.forEach(n => {
+          if (n.includes('|')) {
+            helpNotesMap[n.split('|')[0]] = n.split('|')[1];
+          }
+        });
+
+        let cellContent = '';
+        for (const name of fixedStaffOrder) {
+          const isAttending = attendingBaseNames.includes(name);
+          const isExcluded = isExcludedFromCount(clinic.name, name);
+          const notes = helpNotesMap[name] || '';
+
+          if (isAttending) {
+            const displayName = notes ? `${name}（${notes}）` : name;
+            const cls = isExcluded ? 'staff-name-item reception-staff' : 'staff-name-item';
+            cellContent += `<div class="${cls}">${displayName}</div>`;
+          } else {
+            const cls = isExcluded ? 'staff-name-item staff-absent reception-staff' : 'staff-name-item staff-absent';
+            cellContent += `<div class="${cls}">${name}</div>`;
+          }
+        }
+        for (const n of attending) {
+          const baseName = n.includes('|') ? n.split('|')[0] : n;
+          if (!fixedStaffOrder.includes(baseName)) {
+            const notesVal = n.includes('|') ? n.split('|')[1] : '';
+            const displayName = notesVal ? `${baseName}（${notesVal}）` : baseName;
+            cellContent += `<div class="staff-name-item help-staff">${displayName}</div>`;
+          }
+        }
+        if (!cellContent) cellContent = '<div class="staff-name-item no-data">-</div>';
+        tableHTML += `<td class="staff-expand-cell${weekDividerClass}">${cellContent}</td>`;
+      }
+      tableHTML += '</tr>';
+    }
   }
   
   tableHTML += '</tbody>';
@@ -417,7 +481,7 @@ function renderTable() {
   shiftTableWrapper.style.display = 'block';
 
   // サマリーバー更新
-  updateSummaryBar(summary);
+  updateSummaryBar(summaryToday, summaryTomorrow);
 
   // 選択中の日があれば詳細パネルを再描画
   if (selectedDateIndex !== null) {
@@ -426,27 +490,41 @@ function renderTable() {
 }
 
 /**
- * Update summary bar
+ * Update summary bar (today + tomorrow)
  */
-function updateSummaryBar(summary) {
+function updateSummaryBar(summaryToday, summaryTomorrow) {
   let html = '';
-  
-  if (summary.shortage.length > 0) {
-    html += '<div class="summary-section"><span class="summary-label">不足:</span>';
-    html += summary.shortage.map(s => `<span class="summary-shortage">${s.name} ${s.diff}名</span>`).join('、');
-    html += '</div>';
+
+  // --- 本日 ---
+  html += '<div class="summary-day-block">';
+  html += '<span class="summary-day-label">本日:</span> ';
+  if (summaryToday.shortage.length > 0) {
+    html += summaryToday.shortage.map(s => `<span class="summary-shortage">${s.name} ${s.diff}名</span>`).join(' ');
+    html += ' ';
   }
-  
-  if (summary.surplus.length > 0) {
-    html += '<div class="summary-section"><span class="summary-label">余剰:</span>';
-    html += summary.surplus.map(s => `<span class="summary-surplus">${s.name} +${s.diff}名</span>`).join('、');
-    html += '</div>';
+  if (summaryToday.surplus.length > 0) {
+    html += summaryToday.surplus.map(s => `<span class="summary-surplus">${s.name} +${s.diff}名</span>`).join(' ');
   }
-  
-  if (html === '') {
-    html = '<span class="summary-item">本日は全院適正人数です</span>';
+  if (summaryToday.shortage.length === 0 && summaryToday.surplus.length === 0) {
+    html += '<span class="summary-ok">全院適正 ✔</span>';
   }
-  
+  html += '</div>';
+
+  // --- 明日 ---
+  html += '<div class="summary-day-block">';
+  html += '<span class="summary-day-label">明日:</span> ';
+  if (summaryTomorrow.shortage.length > 0) {
+    html += summaryTomorrow.shortage.map(s => `<span class="summary-shortage">${s.name} ${s.diff}名</span>`).join(' ');
+    html += ' ';
+  }
+  if (summaryTomorrow.surplus.length > 0) {
+    html += summaryTomorrow.surplus.map(s => `<span class="summary-surplus">${s.name} +${s.diff}名</span>`).join(' ');
+  }
+  if (summaryTomorrow.shortage.length === 0 && summaryTomorrow.surplus.length === 0) {
+    html += '<span class="summary-ok">全院適正 ✔</span>';
+  }
+  html += '</div>';
+
   summaryBar.innerHTML = html;
 }
 
