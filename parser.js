@@ -332,10 +332,12 @@ class ShiftParser {
           return !this.isReceptionStaffForClinic(clinicName, baseName);
         }).length;
         const isDataMissing = count === 0 && attendingStaff.length === 0;
-        // 4段階ステータス: shortage / ok / surplus-minor(余力あり) / surplus(余剰)
+        // 5段階ステータス: shortage-severe / shortage / ok / surplus-minor(余力あり) / surplus(余剰)
         let status;
         if (isDataMissing) {
           status = 'no-data';
+        } else if (count <= clinic.baseline - 2) {
+          status = 'shortage-severe';
         } else if (count < clinic.baseline) {
           status = 'shortage';
         } else if (count === clinic.baseline) {

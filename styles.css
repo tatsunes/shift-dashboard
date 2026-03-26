@@ -16,6 +16,7 @@
   --status-surplus-minor: #cbe0f9; /* Lighter blue */
   --status-surplus: #a4c5ee; /* Slightly lighter blue */
   --status-shortage: #f8c0c0; /* Lighter pink/red */
+  --status-shortage-severe: #f29b9b; /* Darker red for -2 or less */
   --status-no-data: #eaeaea; /* Lighter gray */
   
   --header-height: 60px;
@@ -465,6 +466,11 @@ details.accordion-filter[open] summary.accordion-summary {
   color: #7a1a1a;
 }
 
+.status-shortage-severe {
+  background-color: var(--status-shortage-severe);
+  color: #5a0a0a;
+}
+
 .status-no-data {
   background-color: var(--status-no-data);
   color: var(--color-secondary);
@@ -566,6 +572,7 @@ details.accordion-filter[open] summary.accordion-summary {
 .legend-color.status-ok { background: var(--status-ok); }
 .legend-color.status-surplus-minor { background: var(--status-surplus-minor); }
 .legend-color.status-surplus { background: var(--status-surplus); }
+.legend-color.status-shortage-severe { background: var(--status-shortage-severe); }
 .legend-color.status-shortage { background: var(--status-shortage); }
 .legend-color.status-no-data { background: var(--status-no-data); border: 1px solid var(--color-gray-dark); }
 
@@ -843,6 +850,7 @@ details.accordion-filter[open] summary.accordion-summary {
 .clinic-day-header.status-ok       { background: var(--status-ok); color: #2d5a2d; }
 .clinic-day-header.status-surplus-minor { background: var(--status-surplus-minor); color: #2c5282; }
 .clinic-day-header.status-surplus  { background: var(--status-surplus); color: #1a3a5c; }
+.clinic-day-header.status-shortage-severe { background: var(--status-shortage-severe); color: #5a0a0a; }
 .clinic-day-header.status-shortage { background: var(--status-shortage); color: #7a1a1a; }
 .clinic-day-header.status-no-data  { background: var(--status-no-data); color: var(--color-secondary); }
 
