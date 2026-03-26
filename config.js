@@ -34,7 +34,7 @@ const DEFAULT_CLINICS = [
 // Default reception staff list (excluded from count) for GitHub Pages
 const DEFAULT_RECEPTION_STAFF = [
   { clinic: '亀田', name: '伊藤' },
-  { clinic: '亀田', name: '伊藤' },
+  { clinic: '亀田', name: '池端' },
   { clinic: '新発田', name: '石山' },
   { clinic: '寺尾台', name: '金子' },
   { clinic: '関屋', name: '冨樫' },

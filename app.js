@@ -356,7 +356,18 @@ function renderTable() {
   }
   
   // テーブルヘッダー構築
-  const today = new Date().getDate();
+  const now = new Date();
+  const today = now.getDate();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  let isCurrentMonth = false;
+  const sheetName = sheetSelector ? sheetSelector.value : '';
+  const parsedSheetMonth = parseMonthFromSheetName(sheetName);
+  
+  if (parsedSheetMonth && parsedSheetMonth.year === currentYear && parsedSheetMonth.month === currentMonth) {
+    isCurrentMonth = true;
+  }
+  
   const tomorrow = today + 1;
 
   let tableHTML = '<thead><tr>';
@@ -367,7 +378,7 @@ function renderTable() {
     const dayClass = date.isSaturday ? 'day-saturday' : date.isSunday ? 'day-sunday' : '';
     const weekDividerClass = (date.dayOfWeek === '日' && i !== 0) ? ' week-divider' : '';
     const selectedClass = selectedDateIndex === i ? ' selected' : '';
-    const todayClass = date.day === today ? ' col-today' : '';
+    const todayClass = (isCurrentMonth && date.day === today) ? ' col-today' : '';
     tableHTML += `<th class="date-header ${dayClass}${weekDividerClass}${selectedClass}${todayClass}" data-date-index="${i}" onclick="renderDayDetail(${i})" title="${date.day}日の出勤者を確認">${date.day}<br><small>${date.dayOfWeek}</small></th>`;
   }
   
@@ -400,11 +411,11 @@ function renderTable() {
         'データなし' : 
         `出勤: ${dayData.count}名 / 基本: ${dayData.baseline}名${dayData.diff > 0 ? ' +' + dayData.diff : dayData.diff < 0 ? ' ' + dayData.diff : ''}${staffNames ? '\n' + staffNames : ''}`;
       
-      const todayClass = (dayData.date === today) ? ' col-today' : '';
+      const todayClass = (isCurrentMonth && dayData.date === today) ? ' col-today' : '';
       tableHTML += `<td class="data-cell ${statusClass}${weekDividerClass}${todayClass}" onclick="showStaffModal('${clinic.name}', ${i})">${dayData.isDataMissing ? '-' : dayData.count}<div class="cell-tooltip">${tooltipText}</div></td>`;
       
       // Add to summary for today
-      if (dayData.date === today && !dayData.isDataMissing) {
+      if (isCurrentMonth && dayData.date === today && !dayData.isDataMissing) {
         if (dayData.diff < 0) {
           summaryToday.shortage.push({ name: clinic.name, diff: dayData.diff });
         } else if (dayData.diff > 0) {
@@ -412,7 +423,7 @@ function renderTable() {
         }
       }
       // Add to summary for tomorrow
-      if (dayData.date === tomorrow && !dayData.isDataMissing) {
+      if (isCurrentMonth && dayData.date === tomorrow && !dayData.isDataMissing) {
         if (dayData.diff < 0) {
           summaryTomorrow.shortage.push({ name: clinic.name, diff: dayData.diff });
         } else if (dayData.diff > 0) {
@@ -439,6 +450,7 @@ function renderTable() {
       for (let i = 0; i < clinicData.daily.length; i++) {
         const dayData = clinicData.daily[i];
         const weekDividerClass = (dates[i] && dates[i].dayOfWeek === '日' && i !== 0) ? ' week-divider' : '';
+        const todayClass = (isCurrentMonth && dayData.date === today) ? ' col-today' : '';
         const attending = (dayData.attendingStaff || []);
         const attendingBaseNames = attending.map(n => n.includes('|') ? n.split('|')[0] : n);
         const helpNotesMap = {};
@@ -472,7 +484,7 @@ function renderTable() {
           }
         }
         if (!cellContent) cellContent = '<div class="staff-name-item no-data">-</div>';
-        tableHTML += `<td class="staff-expand-cell${weekDividerClass}">${cellContent}</td>`;
+        tableHTML += `<td class="staff-expand-cell${weekDividerClass}${todayClass}">${cellContent}</td>`;
       }
       tableHTML += '</tr>';
     }

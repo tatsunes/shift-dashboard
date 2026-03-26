@@ -485,13 +485,18 @@ details.accordion-filter[open] summary.accordion-summary {
   background-color: rgba(198, 40, 40, 0.05) !important;
 }
 
-/* Today column highlight */
-.col-today {
-  outline: 2px solid #4a90d9;
-  outline-offset: -2px;
+/* Today column highlight outer frame */
+.shift-table th.col-today,
+.shift-table td.col-today {
+  border-left: 2px solid #4a90d9 !important;
+  border-right: 2px solid #4a90d9 !important;
 }
 .shift-table th.col-today {
   background: #dbe8f5 !important;
+  border-top: 2px solid #4a90d9 !important;
+}
+.shift-table tbody tr:last-child td.col-today {
+  border-bottom: 2px solid #4a90d9 !important;
 }
 
 /* Tooltip */
