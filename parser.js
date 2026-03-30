@@ -384,7 +384,8 @@ class ShiftParser {
 
     // 注記パターン（時間等）: ~18:00, 18:00~, PM, 午後, 18時
     const isNoteOnly = (s) => /^[~～]?\d{1,2}[:\uff1a]\d{2}[~～]?$/.test(s)
-      || /^PM$/i.test(s) || /^午後$/.test(s) || /^\d{1,2}時/.test(s);
+      || /^(AM|PM)$/i.test(s) || /^(午前|午後)$/.test(s) || /^\d{1,2}時/.test(s)
+      || /^[~～]?\d{1,2}時\d{0,2}分?[~～]?$/.test(s);
 
     const result = [];
     let pendingNote = '';  // 名前の前に来た注記を一時保持
@@ -437,7 +438,7 @@ class ShiftParser {
     const timePatterns = [
       /(.+?)\s*(~\d{1,2}:\d{2})/,      // "名前 ~18:00"
       /(.+?)\s*(\d{1,2}:\d{2}~)/,      // "名前 18:00~"
-      /(.+?)\s*(PM|午後)/,             // "名前 PM"
+      /(.+?)\s*(AM|PM|午前|午後)/,      // "名前 AM/PM"
       /(.+?)\s*(\d{1,2}時)/,           // "名前 18時"
     ];
     
